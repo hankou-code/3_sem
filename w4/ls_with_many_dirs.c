@@ -37,9 +37,9 @@ void print_usage(char* str) {
 }
 
 // https://stackoverflow.com/questions/8436841/how-to-recursively-list-directories-in-c-on-linux
-void recursively_print_listdir(const char *name, int indent) {
-  DIR *dir;
-  struct dirent *entry;
+void recursively_print_listdir(const char* name, int indent) {
+  DIR* dir;
+  struct dirent* entry;
 
   if (!(dir = opendir(name)))
     return;
@@ -59,13 +59,13 @@ void recursively_print_listdir(const char *name, int indent) {
   closedir(dir);
 }
 
-static const char * lookup[] = {"Jan", "Feb", "Mar", "Apr", "May"\
+static const char* lookup[] = {"Jan", "Feb", "Mar", "Apr", "May"\
                                 "Jun", "Jul", "Aug", "Sep", "Oct",\
                                 "Nov", "Dec"};
 
-void display_contents(char * name) {
+void display_contents(char* name) {
   struct stat sb;
-  struct tm * t;
+  struct tm* t;
   char link_read[255];
   ssize_t bytes_read;
   lstat(name, &sb);
@@ -113,12 +113,12 @@ void display_contents(char * name) {
     printf("%s\n", name);
 }
 
-void get_contents(DIR *d){
+void get_contents(DIR* d){
 
-  struct dirent *entry;
-  int i =0;
-  while((entry = readdir(d)) != NULL){
-    if(i < 2 ){
+  struct dirent* entry;
+  int i = 0;
+  while ((entry = readdir(d)) != NULL) {
+    if (i < 2) {
       i++;
       continue;
     } 
@@ -132,8 +132,8 @@ int main(int argc, char* argv[]) {
 
   opterr = 0;
 
-  DIR *d;
-  struct dirent *dir;
+  DIR* d;
+  struct dirent* dir;
 
   if (argc == 1) {
     d = opendir(start_dirrectory);
