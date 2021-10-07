@@ -245,10 +245,10 @@ int main(int argc, char* argv[]) {
   
   // check if this (2) file names was given
   if (argc - optind < 2) {
-    printf("Too few arguments.\n");
+    perror("Too few arguments.\n");
     return -1;
   } else if (argc - optind > 2) {
-    printf("Too many arguments.\n");
+    perror("Too many arguments.\n");
     return -2;
   }
 

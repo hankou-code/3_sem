@@ -114,7 +114,6 @@ void display_contents(char* name) {
 }
 
 void get_contents(DIR* d){
-
   struct dirent* entry;
   int i = 0;
   while ((entry = readdir(d)) != NULL) {
