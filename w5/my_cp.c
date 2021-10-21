@@ -15,7 +15,7 @@
 #define FALSE (0)
 #define CONFIRMATION "yes"
 #define CANCELLATION "no"
-#define PERMISSION_DENIED_CODE 13
+#define PERMISSION_DENIED_CODE (EACCES)
 
 extern int errno;
 
@@ -72,7 +72,7 @@ void print_verbose(char* src, char* dst) {
 }
 
 
-// looks like cute shit
+// looks like cute
 void confirmation_of_copying() {
   printf("Are you sure? [yes/no]\n");
   char buf[1000];
