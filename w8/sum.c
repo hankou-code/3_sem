@@ -1,20 +1,17 @@
 // https://stackoverflow.com/questions/4812891/fork-and-pipes-in-c/4812963
-// https://github.com/eteran/c-vector/blob/master/cvector.h
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cvector.h"
-
 /* Read numbers from the pipe and print sum of them. */
 void read_from_pipe (int file) {
   FILE* stream = fdopen(file, "r");
-  int number = 0;
+  int number;
   int sum = 0;
   
-  while (fscanf(stream, "%d", &number)) { 
+  while (fscanf(stream, "%d", &number) == 1) { 
     sum += number;
   }
 
@@ -22,20 +19,14 @@ void read_from_pipe (int file) {
   fclose(stream);
 }
 
-/* Write number array to the pipe. */
+/* Write numbers to the pipe. */
 void write_to_pipe (int file) {
-  FILE *stream;
-  stream = fdopen (file, "w");
-  
-  cvector_vector_type(char) input = NULL;
-  char buf;
-  
-  while (scanf("%c", &buf)) {
-    cvector_push_back(input, buf);
+  int number;
+  FILE* stream = fdopen (file, "w");
+  while(scanf("%d", &number) == 1) {
+    fprintf(stream, "%d ", number);
   }
-  
-  fprintf(stream, "%s", input);
-  fclose (stream);
+  fclose(stream);
 }
 
 int main (void) {

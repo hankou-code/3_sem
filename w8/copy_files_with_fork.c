@@ -3,41 +3,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct DataFrame {
+#define MAX_BUF_SIZE 2
+
+typedef struct ChunkOfData {
   char* data;
   int length;
-} DataFrame;
+  FILE* point_at_the_end;
+  int is_last_chunk;
+} ChunkOfData;
 
-// https://stackoverflow.com/questions/14002954/c-programming-how-to-read-the-whole-file-contents-into-a-buffer
-DataFrame read_data(FILE* stream) {
+ChunkOfData read_part_of_data(FILE* stream, int max_length_of_data) {
+  long start_point = ftell(stream);
   fseek(stream, 0, SEEK_END);
-  long stream_size = ftell(stream);
-  fseek(stream, 0, SEEK_SET);  /* same as rewind(stream); */
-  
-  char *string = malloc(stream_size + 1);
-  fread(string, 1, stream_size, stream);
-  string[stream_size] = 0;
+  long left_to_read = ftell(stream) - start_point;
+  fseek(stream, start_point, SEEK_SET);
 
-  DataFrame df;
-  df.data = string;
-  df.length = stream_size;
+  char* string = NULL;
+  ChunkOfData cod;
 
-  return df;
+  if (left_to_read < max_length_of_data) {
+    cod.is_last_chunk = 1;
+    cod.length = left_to_read;
+    cod.point_at_the_end = NULL;
+    cod.data = malloc(left_to_read + 1);
+    fread(cod.data, 1, left_to_read, stream);
+    cod.data[left_to_read] = 0;
+  } else {
+    cod.is_last_chunk = 0;
+    cod.length = max_length_of_data;
+    cod.data = malloc(max_length_of_data + 1);
+    fread(cod.data, 1, max_length_of_data, stream);
+    cod.data[max_length_of_data] = 0;
+    fseek(stream, start_point + max_length_of_data, SEEK_SET);
+    cod.point_at_the_end = stream;
+  }
+  return cod;
 }
 
 // read data from pipe and write to dst file
 void handle_child_process(int pipe_id, const char* dst) {
-  // read data from pipe
   int number_symbols;
-  read(pipe_id, &number_symbols, sizeof(int));
-  char* data = (char*)malloc(number_symbols * sizeof(char));
-  read(pipe_id, data, number_symbols);
+  char* data = (char*)malloc((MAX_BUF_SIZE + 1) * sizeof(char));
 
-  // write data to dst
-  FILE* dst_stream = fopen(dst, "w");
-  fwrite(data, sizeof(char), number_symbols, dst_stream);
+  remove(dst);
+  FILE* dst_stream = fopen(dst, "a");
 
-  // common part
+  while(1) {
+    read(pipe_id, &number_symbols, 1);
+    read(pipe_id, data, number_symbols);
+    fwrite(data, sizeof(char), number_symbols, dst_stream);
+    if (number_symbols != MAX_BUF_SIZE) {
+      break;
+    }
+  }
+
   fclose(dst_stream);
   close(pipe_id);
   free(data);
@@ -45,17 +64,18 @@ void handle_child_process(int pipe_id, const char* dst) {
 
 // read data from src file and write to pipe
 void handle_parent_process(int pipe_id, const char* src) {
-  // read data
   FILE* src_stream = fopen(src, "r");
-  DataFrame df = read_data(src_stream);
+  ChunkOfData cod = {NULL, 0, src_stream, 0};
 
-  // write number symbols and string to pipe
-  write(pipe_id, &df.length, sizeof(int));
-  write(pipe_id, df.data, df.length);
+  do {
+    cod = read_part_of_data(cod.point_at_the_end, MAX_BUF_SIZE);
+    // write len(data) and data to pipe
+    write(pipe_id, &cod.length, sizeof(char));
+    write(pipe_id, cod.data, cod.length);
+  } while(!cod.is_last_chunk);
 
-  // common part
   fclose(src_stream);
-  free(df.data);
+  free(cod.data);
   close(pipe_id);
 }
 
