@@ -21,7 +21,7 @@ myls (простой, без флагов) и то, что она должна �
 
 void cat(const char* filename) {
   int ch;
-  FILE *file = fopen(filename, "r");
+  FILE* file = fopen(filename, "r");
   while (!feof(file) && !ferror(file)) {
     ch = getc(file);
     if (ch != EOF) {
