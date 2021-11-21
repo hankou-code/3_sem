@@ -7,9 +7,8 @@
 #define FLAG_ACCUMULATE 2
 
 #define MIN_THREADS 4
-#define MAX_THREADS 4
+#define MAX_THREADS 8
 
 // explain why I use 0666:
 // https://stackoverflow.com/questions/2245193/why-does-open-create-my-file-with-the-wrong-permissions
 #define RWX_PERMISSION 0666
-
